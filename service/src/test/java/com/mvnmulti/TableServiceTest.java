@@ -81,6 +81,19 @@ public class TableServiceTest {
     }
 
     @Test
+    public void testEditCellInvalidIndexes() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(-1, 0, "key", "newKey");
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, -1, "key", "newKey");
+        });
+    }
+
+    @Test
     public void testSearchTable() {
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
@@ -96,5 +109,63 @@ public class TableServiceTest {
         assertEquals(1, results.size());
         assertEquals(1, results.get(0).getKeyOccurrences());
         assertEquals(0, results.get(0).getValueOccurrences());
+    }
+
+    @Test
+    public void testSearchTableNoResults() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        List<SearchResult> results = tableService.searchTable("nonexistent");
+
+        assertTrue(results.isEmpty());
+    }
+
+    @Test
+    public void testAddRow() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        tableService.addRow(2, 0);
+
+        assertEquals(1, table.getRowCount());
+        assertEquals(2, table.getRow(0).getCells().size());
+    }
+
+    @Test
+    public void testAddRowInvalidIndex() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.addRow(2, -1);
+        });
+    }
+
+    @Test
+    public void testSortTable() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("b", "2"));
+        cells.add(new Cell("a", "1"));
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        tableService.sortTable(0, "asc");
+
+        assertEquals("a", table.getRow(0).getCells().get(0).getKey());
+        assertEquals("b", table.getRow(0).getCells().get(1).getKey());
+    }
+
+    @Test
+    public void testSortTableInvalidIndex() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.sortTable(-1, "asc");
+        });
     }
 }
