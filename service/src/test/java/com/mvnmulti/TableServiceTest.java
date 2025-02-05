@@ -220,6 +220,24 @@ public class TableServiceTest {
         });
     }
 
+    @Test
+    public void testIsAppDefault() {
+        when(fileTableMock.isAppDefault()).thenReturn(true);
+
+        boolean result = tableService.isAppDefault();
+
+        assertTrue(result);
+    }
+
+    @Test
+    public void testGetCurrentFileName() {
+        String fileName = "test.txt";
+        when(fileTableMock.getCurrentFileName()).thenReturn(fileName);
+
+        String result = tableService.getCurrentFileName();
+
+        assertEquals(fileName, result);
+    }
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
         Cell cell = new Cell("key", "value");
