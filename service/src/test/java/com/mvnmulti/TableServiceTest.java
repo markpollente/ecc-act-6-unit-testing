@@ -306,6 +306,17 @@ public class TableServiceTest {
     }
 
     @Test
+    public void testGetTable() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        Table result = tableService.getTable();
+
+        assertNotNull(result);
+        assertEquals(table, result);
+    }
+
+    @Test
     public void testAddRow() {
         Table table = new Table();
         when(fileTableMock.getTable()).thenReturn(table);
