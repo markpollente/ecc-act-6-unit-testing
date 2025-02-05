@@ -238,6 +238,9 @@ public class TableServiceTest {
 
         assertEquals(fileName, result);
     }
+
+    @Test
+    public void testSearchTableKeyOnly() {
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
         Cell cell = new Cell("key", "value");
@@ -252,6 +255,44 @@ public class TableServiceTest {
         assertEquals(1, results.size());
         assertEquals(1, results.get(0).getKeyOccurrences());
         assertEquals(0, results.get(0).getValueOccurrences());
+    }
+
+    @Test
+    public void testSearchTableValueOnly() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        Cell cell = new Cell("key", "value");
+        cells.add(cell);
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        List<SearchResult> results = tableService.searchTable("value");
+
+        assertEquals(1, results.size());
+        assertEquals(0, results.get(0).getKeyOccurrences());
+        assertEquals(1, results.get(0).getValueOccurrences());
+    }
+
+
+
+    @Test
+    public void testSearchTableBothKeyAndValue() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        Cell cell = new Cell("keyvalue", "keyvalue");
+        cells.add(cell);
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        List<SearchResult> results = tableService.searchTable("keyvalue");
+
+        assertEquals(1, results.size());
+        assertEquals(1, results.get(0).getKeyOccurrences());
+        assertEquals(1, results.get(0).getValueOccurrences());
     }
 
     @Test
