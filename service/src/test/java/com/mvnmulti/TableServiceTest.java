@@ -328,7 +328,7 @@ public class TableServiceTest {
     }
 
     @Test
-    public void testAddRowInvalidIndex() {
+    public void testAddRowWithInvalidRowIndexNegative() {
         Table table = new Table();
         when(fileTableMock.getTable()).thenReturn(table);
 
@@ -338,7 +338,14 @@ public class TableServiceTest {
     }
 
     @Test
-    public void testSortTable() {
+    public void testAddRowWithInvalidRowIndexOutOfBounds() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.addRow(2, 10);
+        });
+    }
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
         cells.add(new Cell("b", "2"));
