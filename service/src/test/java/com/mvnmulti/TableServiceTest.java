@@ -62,7 +62,7 @@ public class TableServiceTest {
     }
 
     @Test
-    public void testEditCell() {
+    public void testEditCellChangeKey() {
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
         Cell cell = new Cell("key", "value");
@@ -81,6 +81,61 @@ public class TableServiceTest {
     }
 
     @Test
+    public void testEditCellChangeValue() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        Cell cell = new Cell("key", "value");
+        cells.add(cell);
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        EditCellResult result = tableService.editCell(0, 0, "value", "newValue");
+
+        assertEquals("key", result.getOldKey());
+        assertEquals("key", result.getNewKey());
+        assertEquals("value", result.getOldValue());
+        assertEquals("newValue", result.getNewValue());
+    }
+
+    @Test
+    public void testEditCellChangeBoth() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        Cell cell = new Cell("key", "value");
+        cells.add(cell);
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        EditCellResult result = tableService.editCell(0, 0, "both", "newKey,newValue");
+
+        assertEquals("key", result.getOldKey());
+        assertEquals("newKey", result.getNewKey());
+        assertEquals("value", result.getOldValue());
+        assertEquals("newValue", result.getNewValue());
+    }
+
+    @Test
+    public void testEditCellInvalidEditType() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        Cell cell = new Cell("key", "value");
+        cells.add(cell);
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, 0, "invalid", "newKey");
+        });
+    }
+
+
+    @Test
     public void testEditCellInvalidIndexes() {
         Table table = new Table();
         when(fileTableMock.getTable()).thenReturn(table);
@@ -94,7 +149,77 @@ public class TableServiceTest {
     }
 
     @Test
-    public void testSearchTable() {
+    public void testEditCellWithDuplicateKey() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key1", "value1"));
+        cells.add(new Cell("key2", "value2"));
+        table.addRow(new Row(cells));
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, 1, "key", "key1");
+        });
+    }
+
+    @Test
+    public void testEditCellWithInvalidBothInput() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key", "value"));
+        table.addRow(new Row(cells));
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, 0, "both", "invalidInput");
+        });
+    }
+
+    @Test
+    public void testEditCellWithInvalidColumnIndexNegative() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key", "value"));
+        table.addRow(new Row(cells));
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, -1, "key", "newKey");
+        });
+    }
+
+    @Test
+    public void testEditCellWithInvalidColumnIndexOutOfBounds() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key", "value"));
+        table.addRow(new Row(cells));
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, 10, "key", "newKey");
+        });
+    }
+
+    @Test
+    public void testEditCellWithDuplicateKeyCheck() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key1", "value1"));
+        cells.add(new Cell("key2", "value2"));
+        table.addRow(new Row(cells));
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, 1, "key", "key1");
+        });
+    }
+
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
         Cell cell = new Cell("key", "value");
