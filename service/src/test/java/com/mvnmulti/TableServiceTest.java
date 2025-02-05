@@ -346,6 +346,19 @@ public class TableServiceTest {
             tableService.addRow(2, 10);
         });
     }
+
+    @Test
+    public void testSortTableInvalidIndex() {
+        Table table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.sortTable(-1, "asc");
+        });
+    }
+
+    @Test
+    public void testSortTableAscending() {
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
         cells.add(new Cell("b", "2"));
@@ -362,12 +375,29 @@ public class TableServiceTest {
     }
 
     @Test
-    public void testSortTableInvalidIndex() {
+    public void testSortTableDescending() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("b", "2"));
+        cells.add(new Cell("a", "1"));
+        Row row = new Row(cells);
+        table.getRows().add(row);
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        tableService.sortTable(0, "desc");
+
+        assertEquals("b", table.getRow(0).getCells().get(0).getKey());
+        assertEquals("a", table.getRow(0).getCells().get(1).getKey());
+    }
+
+    @Test
+    public void testSortTableInvalidOrder() {
         Table table = new Table();
         when(fileTableMock.getTable()).thenReturn(table);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            tableService.sortTable(-1, "asc");
+            tableService.sortTable(0, "invalidOrder");
         });
     }
 }
