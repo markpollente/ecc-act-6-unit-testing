@@ -1,0 +1,9 @@
+app/target
+model/target
+service/target
+utilities/target
+
+*.class
+*.jar
+*.war
+*.ear
