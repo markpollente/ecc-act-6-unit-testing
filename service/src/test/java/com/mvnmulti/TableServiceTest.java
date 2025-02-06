@@ -303,8 +303,12 @@ public class TableServiceTest {
     }
 
     @Test
-    public void testSearchTableNoResults() {
+    public void testSearchTableNoOccurrences() {
         Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key", "value"));
+        table.addRow(new Row(cells));
+
         when(fileTableMock.getTable()).thenReturn(table);
 
         List<SearchResult> results = tableService.searchTable("nonexistent");
