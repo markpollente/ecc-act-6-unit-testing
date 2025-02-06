@@ -171,6 +171,21 @@ public class TableServiceTest {
     }
 
     @Test
+    public void testEditCellChangeBothWithDuplicateKey() {
+        Table table = new Table();
+        List<Cell> cells = new ArrayList<>();
+        cells.add(new Cell("key1", "value1"));
+        cells.add(new Cell("key2", "value2"));
+        table.addRow(new Row(cells));
+
+        when(fileTableMock.getTable()).thenReturn(table);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            tableService.editCell(0, 1, "both", "key1,newValue");
+        });
+    }
+
+    @Test
     public void testEditCellWithInvalidBothInput() {
         Table table = new Table();
         List<Cell> cells = new ArrayList<>();
@@ -209,21 +224,6 @@ public class TableServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> {
             tableService.editCell(0, 10, "key", "newKey");
-        });
-    }
-
-    @Test
-    public void testEditCellWithDuplicateKeyCheck() {
-        Table table = new Table();
-        List<Cell> cells = new ArrayList<>();
-        cells.add(new Cell("key1", "value1"));
-        cells.add(new Cell("key2", "value2"));
-        table.addRow(new Row(cells));
-
-        when(fileTableMock.getTable()).thenReturn(table);
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            tableService.editCell(0, 1, "key", "key1");
         });
     }
 
