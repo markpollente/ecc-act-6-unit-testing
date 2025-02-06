@@ -6,9 +6,9 @@ import com.mvnmulti.model.Table;
 import com.mvnmulti.model.EditCellResult;
 import com.mvnmulti.model.SearchResult;
 import com.mvnmulti.utilities.FileTable;
-import com.mvnmulti.utilities.RandomStringUtil;
 
 import java.io.IOException;
+import java.util.Random;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -47,6 +47,15 @@ public class TableService {
         return fileTable.getCurrentFileName();
     }
 
+    public String generateRandomAscii(int length) {
+        Random random = new Random();
+        StringBuilder rand = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            rand.append((char) (random.nextInt(94) + 33));
+        }
+        return rand.toString();
+    }
+
     public void createTable(int rows, int columns) {
         Table table = fileTable.getTable();
         table.clear();
@@ -57,10 +66,10 @@ public class TableService {
             for (int j = 0; j < columns; j++) {
                 String key;
                 do {
-                    key = RandomStringUtil.generateRandomAscii(3);
+                    key = generateRandomAscii(3);
                 } while (generatedKeys.contains(key));
                 generatedKeys.add(key);
-                String value = RandomStringUtil.generateRandomAscii(3);
+                String value = generateRandomAscii(3);
                 rowCells.add(new Cell(key, value));
             }
             table.addRow(new Row(rowCells));
@@ -140,7 +149,7 @@ public class TableService {
     public void addRow(int numCells, int rowIndex) {
         List<Cell> newCells = new ArrayList<>();
         for (int i = 0; i < numCells; i++) {
-            newCells.add(new Cell(RandomStringUtil.generateRandomAscii(3), RandomStringUtil.generateRandomAscii(3)));
+            newCells.add(new Cell(generateRandomAscii(3), generateRandomAscii(3)));
         }
 
         if (rowIndex < 0 || rowIndex > fileTable.getTable().getRowCount()) {
