@@ -19,4 +19,5 @@ public interface TableService {
     List<SearchResult> searchTable(String searchTerm);
     void addRow(int numCells, int rowIndex);
     void sortTable(int rowIndex, String order);
+    String generateRandomAscii(int length);
 }

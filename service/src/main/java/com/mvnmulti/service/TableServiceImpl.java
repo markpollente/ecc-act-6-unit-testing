@@ -176,7 +176,8 @@ public class TableServiceImpl implements TableService {
         rowToSortList.sort(comparator);
     }
 
-    private String generateRandomAscii(int length) {
+    @Override
+    public String generateRandomAscii(int length) {
         Random random = new Random();
         StringBuilder rand = new StringBuilder();
         for (int i = 0; i < length; i++) {
