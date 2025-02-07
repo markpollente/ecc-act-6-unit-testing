@@ -1,6 +1,6 @@
 package com.mvnmulti.app;
 
-import com.mvnmulti.service.TableService;
+import com.mvnmulti.service.TableServiceImpl;
 import com.mvnmulti.utilities.FileTable;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         FileTable fileTable = new FileTable();
-        TableService tableService = new TableService(fileTable);
+        TableServiceImpl tableService = new TableServiceImpl(fileTable);
         TableActions tableActions = new TableActions(tableService, scan);
         String fileName = args.length > 0 ? args[0] : null;
 

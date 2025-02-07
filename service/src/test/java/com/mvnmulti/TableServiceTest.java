@@ -27,13 +27,13 @@ import static org.mockito.Mockito.when;
 
 public class TableServiceTest {
 
-    private TableService tableService;
+    private TableServiceImpl tableService;
     private FileTable fileTableMock;
 
     @BeforeEach
     public void setUp() {
         fileTableMock = Mockito.mock(FileTable.class);
-        tableService = new TableService(fileTableMock);
+        tableService = new TableServiceImpl(fileTableMock);
     }
 
     @Test
