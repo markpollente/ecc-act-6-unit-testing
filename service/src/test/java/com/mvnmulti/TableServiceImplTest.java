@@ -6,18 +6,22 @@ import com.mvnmulti.model.Row;
 import com.mvnmulti.model.SearchResult;
 import com.mvnmulti.model.Table;
 import com.mvnmulti.utilities.FileTable;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashSet;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mockito;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashSet;
+import org.mockito.MockitoAnnotations;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,13 +39,34 @@ import static org.mockito.Mockito.spy;
 
 public class TableServiceImplTest {
 
+    @InjectMocks
     private TableServiceImpl tableService;
+
+    @Mock
     private FileTable fileTableMock;
+
+    private Table table;
 
     @BeforeEach
     public void setUp() {
-        fileTableMock = Mockito.mock(FileTable.class);
-        tableService = new TableServiceImpl(fileTableMock);
+        MockitoAnnotations.openMocks(this);
+
+        table = new Table();
+        when(fileTableMock.getTable()).thenReturn(table);
+    }
+
+    private List<Cell> createCells(String... keysAndValues) {
+        List<Cell> cells = new ArrayList<>();
+        for (String keyValue : keysAndValues) {
+            String[] parts = keyValue.split(",");
+            cells.add(new Cell(parts[0], parts[1]));
+        }
+        return cells;
+    }
+
+    private void addRowToTable(List<Cell> cells) {
+        Row row = new Row(cells);
+        table.getRows().add(row);
     }
 
     @Nested
@@ -70,11 +95,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testGetTable() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             Table result = tableService.getTable();
-
             assertNotNull(result);
             assertEquals(table, result);
         }
@@ -105,9 +126,6 @@ public class TableServiceImplTest {
         @ParameterizedTest
         @ValueSource(ints = {1, 2, 3})
         public void testCreateTableWithDifferentSizes(int size) {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             tableService.createTable(size, size);
 
             assertEquals(size, table.getRowCount());
@@ -121,9 +139,6 @@ public class TableServiceImplTest {
             "3, 4"
         })
         public void testCreateTableWithDifferentRowsAndColumns(int rows, int columns) {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             tableService.createTable(rows, columns);
 
             assertEquals(rows, table.getRowCount());
@@ -132,9 +147,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testCreateTable() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             tableService.createTable(2, 2);
 
             assertEquals(2, table.getRowCount());
@@ -143,9 +155,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testCreateTableWithDuplicateKeysInWhileLoop() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             TableService spyTableService = spy(tableService);
 
             doReturn("dup").doReturn("dup").doReturn("dup").doReturn("unique1").doReturn("unique2").when(spyTableService).generateRandomAscii(anyInt());
@@ -171,14 +180,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellChangeKey() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("key", "value");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             EditCellResult result = tableService.editCell(0, 0, "key", "newKey");
 
@@ -190,14 +192,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellChangeValue() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("key", "value");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             EditCellResult result = tableService.editCell(0, 0, "value", "newValue");
 
@@ -209,14 +204,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellChangeBoth() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("key", "value");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             EditCellResult result = tableService.editCell(0, 0, "both", "newKey,newValue");
 
@@ -228,14 +216,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellInvalidEditType() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("key", "value");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(0, 0, "invalid", "newKey");
@@ -244,9 +225,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellInvalidIndexes() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(-1, 0, "key", "newKey");
             });
@@ -257,13 +235,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellWithDuplicateKey() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("key1", "value1"));
-            cells.add(new Cell("key2", "value2"));
-            table.addRow(new Row(cells));
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key1,value1", "key2,value2"));
 
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(0, 1, "key", "key1");
@@ -272,13 +244,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellChangeBothWithDuplicateKey() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("key1", "value1"));
-            cells.add(new Cell("key2", "value2"));
-            table.addRow(new Row(cells));
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key1,value1", "key2,value2"));
 
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(0, 1, "both", "key1,newValue");
@@ -287,12 +253,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellWithInvalidBothInput() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("key", "value"));
-            table.addRow(new Row(cells));
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(0, 0, "both", "invalidInput");
@@ -301,12 +262,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellWithInvalidColumnIndexNegative() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("key", "value"));
-            table.addRow(new Row(cells));
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(0, -1, "key", "newKey");
@@ -315,12 +271,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testEditCellWithInvalidColumnIndexOutOfBounds() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("key", "value"));
-            table.addRow(new Row(cells));
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.editCell(0, 10, "key", "newKey");
@@ -333,14 +284,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testSearchTableKeyOnly() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("key", "value");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             List<SearchResult> results = tableService.searchTable("key");
 
@@ -351,14 +295,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testSearchTableValueOnly() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("key", "value");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             List<SearchResult> results = tableService.searchTable("value");
 
@@ -369,14 +306,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testSearchTableBothKeyAndValue() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            Cell cell = new Cell("keyvalue", "keyvalue");
-            cells.add(cell);
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("keyvalue,keyvalue"));
 
             List<SearchResult> results = tableService.searchTable("keyvalue");
 
@@ -387,12 +317,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testSearchTableNoOccurrences() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("key", "value"));
-            table.addRow(new Row(cells));
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("key,value"));
 
             List<SearchResult> results = tableService.searchTable("nonexistent");
 
@@ -405,9 +330,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testAddRow() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             tableService.addRow(2, 0);
 
             assertEquals(1, table.getRowCount());
@@ -416,9 +338,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testAddRowWithInvalidRowIndexNegative() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.addRow(2, -1);
             });
@@ -426,9 +345,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testAddRowWithInvalidRowIndexOutOfBounds() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.addRow(2, 10);
             });
@@ -440,9 +356,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testSortTableInvalidIndex() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.sortTable(-1, "asc");
             });
@@ -450,14 +363,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testSortTableAscending() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("b", "2"));
-            cells.add(new Cell("a", "1"));
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("b,2", "a,1"));
 
             tableService.sortTable(0, "asc");
 
@@ -467,14 +373,7 @@ public class TableServiceImplTest {
 
         @Test
         public void testSortTableDescending() {
-            Table table = new Table();
-            List<Cell> cells = new ArrayList<>();
-            cells.add(new Cell("b", "2"));
-            cells.add(new Cell("a", "1"));
-            Row row = new Row(cells);
-            table.getRows().add(row);
-
-            when(fileTableMock.getTable()).thenReturn(table);
+            addRowToTable(createCells("b,2", "a,1"));
 
             tableService.sortTable(0, "desc");
 
@@ -484,9 +383,6 @@ public class TableServiceImplTest {
 
         @Test
         public void testSortTableInvalidOrder() {
-            Table table = new Table();
-            when(fileTableMock.getTable()).thenReturn(table);
-
             assertThrows(IllegalArgumentException.class, () -> {
                 tableService.sortTable(0, "invalidOrder");
             });
